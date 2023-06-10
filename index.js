@@ -54,11 +54,32 @@ async function run() {
         // await client.connect();
 
         const classes = client.db('ApertureAcademy').collection('classes');
+        const instructors = client.db('ApertureAcademy').collection('instructors');
+        const users = client.db('ApertureAcademy').collection('users');
 
         app.get('/classes', async (req, res) => {
             const cursor = classes.find();
             const result = await cursor.toArray();
             res.send(result);
+        })
+
+        app.get('/instructors', async (req, res) => {
+            const cursor = instructors.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.post('/adduser', async(req, res)=>{
+            const doc = req.body;
+            const query = { email: doc.email }
+            const user = await users.findOne(query);
+            if(user == null){
+                const result = await users.insertOne(doc);
+                res.send(result);
+                console.log("New user");
+            }else{
+                console.log("Old user");
+            }
         })
 
         // Send a ping to confirm a successful connection
