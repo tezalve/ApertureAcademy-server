@@ -59,7 +59,7 @@ async function run() {
 
         app.get('/class/:id', async (req, res) => {
             const id = new ObjectId(req.params.id);
-            const result = await classes.findOne({ _id: id});
+            const result = await classes.findOne({ _id: id });
             console.log(result);
             res.send(result);
         })
@@ -119,9 +119,31 @@ async function run() {
             res.send(result);
         })
 
+        app.put('/updateclass', async (req, res) => {
+            const doc = req.body;
+            const filter = { _id: new ObjectId(doc._id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    image: doc.image,
+                    class_name: doc.class_name,
+                    instructor_name: doc.instructor_name,
+                    instructor_email: doc.instructor_email,
+                    available_seats: doc.available_seats,
+                    price: doc.price
+                },
+            };
+            console.log('updated class: ', updateDoc);
+            const result = await classes.updateOne(filter, updateDoc, options);
+            res.send(result);
+            console.log(
+                `${result.matchedCount} document(s) matched the filter, updated ${result.modifiedCount} document(s)`,
+            );
+        })
+
         app.patch('/updateuser/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = { email: email };
+            const filter = { _id: new ObjectId(doc._id) };
             const options = { upsert: false };
             const updateDoc = {
                 $set: {
@@ -129,6 +151,32 @@ async function run() {
                 },
             };
             const result = await users.updateOne(filter, updateDoc, options);
+        })
+
+        app.patch('/updateclassstatus/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: false };
+            const updateDoc = {
+                $set: {
+                    status: req.body.status
+                },
+            };
+            const result = await classes.updateOne(filter, updateDoc, options);
+        })
+
+        app.patch('/updatefeedback', async (req, res) => {
+            const doc = req.body;
+            const filter = { _id: new ObjectId(doc._id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    feedback: doc.feedback
+                },
+            };
+            console.log('updated class: ', updateDoc);
+            const result = await classes.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         // Send a ping to confirm a successful connection
