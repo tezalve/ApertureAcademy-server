@@ -57,6 +57,13 @@ async function run() {
         const instructors = client.db('ApertureAcademy').collection('instructors');
         const users = client.db('ApertureAcademy').collection('users');
 
+        app.get('/class/:id', async (req, res) => {
+            const id = new ObjectId(req.params.id);
+            const result = await classes.findOne({ _id: id});
+            console.log(result);
+            res.send(result);
+        })
+
         app.get('/classes', async (req, res) => {
             const cursor = classes.find();
             const result = await cursor.toArray();
@@ -82,6 +89,17 @@ async function run() {
             res.send(user);
         })
 
+        app.get('/insclasses/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { instructor_email: email };
+            const cursor = classes.find(query);
+            if ((await classes.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         app.post('/adduser', async (req, res) => {
             const doc = req.body;
             const query = { email: doc.email }
@@ -95,11 +113,16 @@ async function run() {
             }
         })
 
+        app.post('/addclass', async (req, res) => {
+            const doc = req.body;
+            const result = await classes.insertOne(doc);
+            res.send(result);
+        })
+
         app.patch('/updateuser/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { email: email };
             const options = { upsert: false };
-            console.log(req.body.role);
             const updateDoc = {
                 $set: {
                     role: req.body.role
