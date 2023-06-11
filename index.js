@@ -69,17 +69,43 @@ async function run() {
             res.send(result);
         })
 
-        app.post('/adduser', async(req, res)=>{
+        app.get('/users', async (req, res) => {
+            const cursor = users.find();
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get('/individual/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email }
+            const user = await users.findOne(query);
+            res.send(user);
+        })
+
+        app.post('/adduser', async (req, res) => {
             const doc = req.body;
             const query = { email: doc.email }
             const user = await users.findOne(query);
-            if(user == null){
+            if (user == null) {
                 const result = await users.insertOne(doc);
                 res.send(result);
                 console.log("New user");
-            }else{
+            } else {
                 console.log("Old user");
             }
+        })
+
+        app.patch('/updateuser/:email', async (req, res) => {
+            const email = req.params.email;
+            const filter = { email: email };
+            const options = { upsert: false };
+            console.log(req.body.role);
+            const updateDoc = {
+                $set: {
+                    role: req.body.role
+                },
+            };
+            const result = await users.updateOne(filter, updateDoc, options);
         })
 
         // Send a ping to confirm a successful connection
