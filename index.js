@@ -56,6 +56,8 @@ async function run() {
         const classes = client.db('ApertureAcademy').collection('classes');
         const instructors = client.db('ApertureAcademy').collection('instructors');
         const users = client.db('ApertureAcademy').collection('users');
+        const addedclasses = client.db('ApertureAcademy').collection('addedclasses');
+
 
         app.get('/class/:id', async (req, res) => {
             const id = new ObjectId(req.params.id);
@@ -141,6 +143,13 @@ async function run() {
             );
         })
 
+        app.post('/addedclasses', async (req, res) => {
+            const doc = req.body;
+            console.log(doc);
+            const result = await addedclasses.insertOne(doc);
+            res.send(result);
+        })
+
         app.patch('/updateuser/:email', async (req, res) => {
             const email = req.params.email;
             const filter = { _id: new ObjectId(doc._id) };
@@ -174,7 +183,6 @@ async function run() {
                     feedback: doc.feedback
                 },
             };
-            console.log('updated class: ', updateDoc);
             const result = await classes.updateOne(filter, updateDoc, options);
             res.send(result);
         })
