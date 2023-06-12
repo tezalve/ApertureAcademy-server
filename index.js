@@ -101,6 +101,16 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/appclasses', async (req, res) => {
+            const query = { status: 'approved' };
+            const cursor = classes.find(query);
+            if ((await classes.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         app.get('/selectedclasses/:email', async (req, res) => {
             const email = req.params.email;
             const query = { user_email: email, payment_done: false };
@@ -238,7 +248,6 @@ async function run() {
 
         app.delete('/deleteaddedclass/:id', async (req, res) => {
             const id = req.params.id;
-            console.log(id);
             const filter = { _id: new ObjectId(id) }
             const result = await addedclasses.deleteOne(filter);
             res.send(result);
