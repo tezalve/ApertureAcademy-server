@@ -54,7 +54,6 @@ async function run() {
         // await client.connect();
 
         const classes = client.db('ApertureAcademy').collection('classes');
-        const instructors = client.db('ApertureAcademy').collection('instructors');
         const users = client.db('ApertureAcademy').collection('users');
         const addedclasses = client.db('ApertureAcademy').collection('addedclasses');
 
@@ -72,7 +71,11 @@ async function run() {
         })
 
         app.get('/instructors', async (req, res) => {
-            const cursor = instructors.find();
+            const query = { role: 'instructor' };
+            const cursor = users.find(query);
+            if ((await users.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
             const result = await cursor.toArray();
             res.send(result);
         })
@@ -189,7 +192,7 @@ async function run() {
 
         app.patch('/updateuser/:email', async (req, res) => {
             const email = req.params.email;
-            const filter = { _id: new ObjectId(doc._id) };
+            const filter = { email: email };
             const options = { upsert: false };
             const updateDoc = {
                 $set: {
@@ -197,6 +200,7 @@ async function run() {
                 },
             };
             const result = await users.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         app.patch('/updateclassstatus/:id', async (req, res) => {
@@ -209,6 +213,7 @@ async function run() {
                 },
             };
             const result = await classes.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         app.patch('/updatefeedback', async (req, res) => {
@@ -234,6 +239,7 @@ async function run() {
                 },
             };
             const result = await addedclasses.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         app.patch('/updateseat/:id', async (req, res) => {
@@ -244,6 +250,7 @@ async function run() {
                 $inc: { available_seats: -1, enrolled: +1 },
             };
             const result = await classes.updateOne(filter, updateDoc, options);
+            res.send(result);
         })
 
         app.delete('/deleteaddedclass/:id', async (req, res) => {
