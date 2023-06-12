@@ -62,7 +62,6 @@ async function run() {
         app.get('/class/:id', async (req, res) => {
             const id = new ObjectId(req.params.id);
             const result = await classes.findOne({ _id: id });
-            console.log(result);
             res.send(result);
         })
 
@@ -102,6 +101,35 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/selectedclasses/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { user_email: email, payment_done: false };
+            const cursor = addedclasses.find(query);
+            if ((await addedclasses.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
+        app.get('/selectedclassesid/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await addedclasses.findOne(query);
+            res.send(result);
+        })
+
+        app.get('/enrclasses/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { user_email: email, payment_done: true };
+            const cursor = addedclasses.find(query);
+            if ((await addedclasses.countDocuments(query)) === 0) {
+                console.log("No documents found!");
+            }
+            const result = await cursor.toArray();
+            res.send(result);
+        })
+
         app.post('/adduser', async (req, res) => {
             const doc = req.body;
             const query = { email: doc.email }
@@ -118,6 +146,12 @@ async function run() {
         app.post('/addclass', async (req, res) => {
             const doc = req.body;
             const result = await classes.insertOne(doc);
+            res.send(result);
+        })
+
+        app.post('/addedclasses', async (req, res) => {
+            const doc = req.body;
+            const result = await addedclasses.insertOne(doc);
             res.send(result);
         })
 
@@ -141,13 +175,6 @@ async function run() {
             console.log(
                 `${result.matchedCount} document(s) matched the filter, updated ${result.modifiedCount} document(s)`,
             );
-        })
-
-        app.post('/addedclasses', async (req, res) => {
-            const doc = req.body;
-            console.log(doc);
-            const result = await addedclasses.insertOne(doc);
-            res.send(result);
         })
 
         app.patch('/updateuser/:email', async (req, res) => {
@@ -184,6 +211,36 @@ async function run() {
                 },
             };
             const result = await classes.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+        app.patch('/paymentdone/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: false };
+            const updateDoc = {
+                $set: {
+                    payment_done: true
+                },
+            };
+            const result = await addedclasses.updateOne(filter, updateDoc, options);
+        })
+
+        app.patch('/updateseat/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: false };
+            const updateDoc = {
+                $inc: { available_seats: -1, enrolled: +1 },
+            };
+            const result = await classes.updateOne(filter, updateDoc, options);
+        })
+
+        app.delete('/deleteaddedclass/:id', async (req, res) => {
+            const id = req.params.id;
+            console.log(id);
+            const filter = { _id: new ObjectId(id) }
+            const result = await addedclasses.deleteOne(filter);
             res.send(result);
         })
 
